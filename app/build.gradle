@@ -1,8 +1,19 @@
 apply plugin: 'com.android.application'
 
+def buildTime() {
+    return new Date().format("yyyyMMdd", TimeZone.getTimeZone("UTC"))
+}
+
 android {
     compileSdkVersion 23
     buildToolsVersion "25.0.2"
+    lintOptions {
+        abortOnError false
+    }
+    dexOptions {
+        maxProcessCount 4
+        javaMaxHeapSize "4g"
+    }
     defaultConfig {
         applicationId "com.marketing.sign"
         minSdkVersion 14
@@ -11,10 +22,67 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    def versionPropsFile = file('version.properties')
+    if (versionPropsFile.canRead()) {
+        def Properties versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionPropsFile))
+        def vName = versionProps['version.name']
+        def vCode = versionProps['version.code'].toInteger()
+        def runTasks = gradle.startParameter.taskNames
+        if ('assembleRelease' in runTasks || 'build' in runTasks) {
+            vCode = buildTime().toInteger()
+        }
+        //versonCode设置为当前打包时间
+        versionProps['version.Code'] = vCode.toString()
+        versionProps.store(versionPropsFile.newWriter(), null)
+        defaultConfig {
+            versionCode vCode
+            versionName vName
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
+    productFlavors {
+        prod {
+            // The actual minSdkVersion for the application.
+            minSdkVersion 14
+        }
+    }
+    signingConfigs {
+        release {
+            storeFile file("../marketingsign.jks")
+            storePassword 's123321'
+            keyAlias 'marketingsign'
+            keyPassword 's123321'
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
+            //Instant Run的功能与shrinkResources不兼容
+            //shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        applicationVariants.all { variant ->
+            //Custom APK name
+            variant.outputs.each { output ->
+                def outputName = "MarketingSign_"
+                if (variant.buildType.name.equals('release')) {
+                    outputName += "V${defaultConfig.versionName}_${buildTime()}_"
+                    outputName += variant.productFlavors.get(0).name.toUpperCase() + "_"
+                    outputName += variant.buildType.name + ".apk"
+                } else {
+                    outputName += variant.productFlavors.get(0).name.toUpperCase() + "_" + variant.buildType.name + ".apk"
+                }
+                output.outputFile = new File(output.outputFile.parentFile, outputName);
+            }
         }
     }
 }
@@ -28,6 +96,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.0.+'
     compile 'com.squareup.okhttp3:okhttp:3.8.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.tencent.wcdb:wcdb-android:1.0.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha9'
     testCompile 'junit:junit:4.12'
 }
