@@ -1,17 +1,27 @@
 package com.marketing.sign.aty;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
-import com.elvishew.xlog.Logger;
-import com.elvishew.xlog.XLog;
 import com.marketing.sign.R;
-import com.marketing.sign.db.PathDao;
+import com.marketing.sign.service.SignService;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements View.OnClickListener{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        findViewById(R.id.btn_to_sign).setOnClickListener(this);
+        startService(new Intent(this,SignService.class));
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_to_sign:
+                startActivity(new Intent(this,WorkActivity.class));
+                break;
+        }
     }
 }

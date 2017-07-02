@@ -31,8 +31,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".aty.BrowserActivity" />
-        <activity android:name=".aty.WelcomeActivity" />
+        <activity
+            android:name=".aty.BrowserActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".aty.WelcomeActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".aty.WorkActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".aty.PathRecordActivity"
+            android:screenOrientation="portrait" />
+
+        <service
+            android:name=".service.SignService"/>
     </application>
 
 </manifest>
