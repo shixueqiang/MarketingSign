@@ -8,7 +8,7 @@ import com.elvishew.xlog.XLog;
 import com.marketing.sign.R;
 import com.marketing.sign.db.PathDao;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

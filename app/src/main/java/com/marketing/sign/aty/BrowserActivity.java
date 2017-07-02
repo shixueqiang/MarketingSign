@@ -9,7 +9,7 @@ import com.marketing.sign.R;
  * Created by shixq on 2017/6/15.
  */
 
-public class BrowserActivity extends AppCompatActivity {
+public class BrowserActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
