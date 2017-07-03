@@ -3,7 +3,6 @@ package com.marketing.sign.db;
 import android.content.ContentValues;
 import android.content.Context;
 
-import com.elvishew.xlog.Logger;
 import com.elvishew.xlog.XLog;
 import com.marketing.sign.model.UserModel;
 import com.marketing.sign.utils.TimeUtil;
@@ -37,7 +36,7 @@ public class UserDao extends UserDBHelper {
             cursor = getReadableDatabase().query(UserModel.TABLE_NAME, null, UserModel.ID + " = ?", new String[]{String.valueOf(user.getId())}, null, null, null);
             if (cursor != null && cursor.getCount() > 0) {
                 ContentValues values = new ContentValues();
-                values.put(UserModel.LOGIN_TIME, TimeUtil.getNowTimeByFormat("yyyy-MM-dd HH:mm:ss"));
+                values.put(UserModel.LOGIN_TIME, TimeUtil.getNowTime());
                 values.put(UserModel.STATUS, 0);
                 values.put(UserModel.START_SIGN_TIME, "");
                 values.put(UserModel.END_SIGN_TIME, "");

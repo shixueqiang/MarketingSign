@@ -3,8 +3,8 @@ package com.marketing.sign.db;
 import android.content.ContentValues;
 import android.content.Context;
 
+import com.amap.api.location.AMapLocation;
 import com.marketing.sign.model.PathRecordModel;
-import com.tencent.wcdb.database.SQLiteDatabase;
 
 import java.util.List;
 
@@ -32,6 +32,17 @@ public class PathDao extends DBHelper {
 
     public void insertPathRecord(Context context,PathRecordModel path) {
         ContentValues values = new ContentValues();
+        float distance = path.getDistance(path.getPathline());
+        String pathlineSring = path.getPathLineString(path.getPathline());
+        List<AMapLocation> list = path.getPathline();
+        AMapLocation firstLocaiton = list.get(0);
+        AMapLocation lastLocaiton = list.get(list.size() - 1);
+        String stratpoint = path.amapLocationToString(firstLocaiton);
+        String endpoint = path.amapLocationToString(lastLocaiton);
+        values.put(PathRecordModel.DISTANCE,distance);
+        values.put(PathRecordModel.PATH_LINE,pathlineSring);
+        values.put(PathRecordModel.START_POINT,stratpoint);
+        values.put(PathRecordModel.END_POINT,endpoint);
         context.getContentResolver().insert(PathProvider.Path.CONTENT_URI,values);
     }
 

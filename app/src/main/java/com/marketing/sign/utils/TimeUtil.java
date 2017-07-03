@@ -9,6 +9,11 @@ import java.util.Date;
  */
 
 public class TimeUtil {
+
+    public static String getNowTime() {
+        return getNowTimeByFormat("yyyy-MM-dd HH:mm:ss");
+    }
+
     public static String getNowTimeByFormat(String format) {
         DateFormat dateFormat = new SimpleDateFormat(format);
         Date date = new Date(System.currentTimeMillis());

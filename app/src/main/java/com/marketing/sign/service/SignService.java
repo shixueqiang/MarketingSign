@@ -12,23 +12,34 @@ import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
-import com.amap.api.maps2d.LocationSource;
+import com.elvishew.xlog.XLog;
 import com.marketing.sign.R;
 import com.marketing.sign.aty.WorkActivity;
+import com.marketing.sign.db.PathDao;
+import com.marketing.sign.model.PathRecordModel;
+import com.marketing.sign.utils.TimeUtil;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by shixq on 2017/7/2.
  */
 
-public class SignService extends Service implements LocationSource, AMapLocationListener {
+public class SignService extends Service implements AMapLocationListener {
     private final static int GRAY_SERVICE_ID = -1001;
-    private OnLocationChangedListener mListener;
     private AMapLocationClient mLocationClient;
     private AMapLocationClientOption mLocationOption;
+    private PathRecordModel pathRecordModel;
+    private long mLocationCount;
+    private ExecutorService mExecutor = Executors.newFixedThreadPool(5);
 
     @Override
     public void onCreate() {
         super.onCreate();
+        pathRecordModel = new PathRecordModel();
+        pathRecordModel.setDate(TimeUtil.getNowTime());
+        startlocation();
     }
 
     @Override
@@ -50,7 +61,11 @@ public class SignService extends Service implements LocationSource, AMapLocation
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mLocationClient.onDestroy();
+        if (mLocationClient != null) {
+            mLocationClient.stopLocation();
+            mLocationClient.onDestroy();
+        }
+        mLocationClient = null;
     }
 
     @Override
@@ -72,23 +87,20 @@ public class SignService extends Service implements LocationSource, AMapLocation
 
     @Override
     public void onLocationChanged(AMapLocation aMapLocation) {
-
-    }
-
-    @Override
-    public void activate(OnLocationChangedListener onLocationChangedListener) {
-        mListener = onLocationChangedListener;
-        startlocation();
-    }
-
-    @Override
-    public void deactivate() {
-        mListener = null;
-        if (mLocationClient != null) {
-            mLocationClient.stopLocation();
-            mLocationClient.onDestroy();
+        if (aMapLocation != null && aMapLocation.getErrorCode() == 0) {
+            XLog.d("onLocationChanged Longitude:" + aMapLocation.getLongitude() + "，Latitude:" + aMapLocation.getLatitude());
+            mLocationCount++;
+            pathRecordModel.addpoint(aMapLocation);
+            //大约每10分钟保存一次记录
+            if (mLocationCount >= 30) {
+                XLog.d("保存轨迹记录");
+                mLocationCount = 0;
+                mExecutor.submit(new SavePathRunnable());
+            }
+        } else {
+            String errText = "定位失败," + aMapLocation.getErrorCode() + ": " + aMapLocation.getErrorInfo();
+            XLog.e(errText);
         }
-        mLocationClient = null;
     }
 
     private void startlocation() {
@@ -108,5 +120,13 @@ public class SignService extends Service implements LocationSource, AMapLocation
         // 在单次定位情况下，定位无论成功与否，都无需调用stopLocation()方法移除请求，定位sdk内部会移除
         //启动定位
         mLocationClient.startLocation();
+    }
+
+    class SavePathRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            PathDao.getInstance(getApplicationContext()).insertPathRecord(getApplicationContext(), pathRecordModel);
+        }
     }
 }

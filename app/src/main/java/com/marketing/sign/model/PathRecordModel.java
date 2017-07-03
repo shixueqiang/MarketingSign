@@ -1,11 +1,13 @@
 package com.marketing.sign.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.amap.api.location.AMapLocation;
+import com.amap.api.maps2d.AMapUtils;
+import com.amap.api.maps2d.model.LatLng;
 import com.marketing.sign.db.annotation.Column;
 import com.marketing.sign.db.annotation.Table;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 用于记录一条轨迹，包括起点、终点、轨迹中间点、距离、耗时、平均速度、时间
@@ -113,7 +115,7 @@ public class PathRecordModel extends BaseModel {
         mPathLinePoints.add(point);
     }
 
-    private String getPathLineString(List<AMapLocation> list) {
+    public String getPathLineString(List<AMapLocation> list) {
         if (list == null || list.size() == 0) {
             return "";
         }
@@ -129,7 +131,7 @@ public class PathRecordModel extends BaseModel {
         return pathLineString;
     }
 
-    private String amapLocationToString(AMapLocation location) {
+    public String amapLocationToString(AMapLocation location) {
         StringBuffer locString = new StringBuffer();
         locString.append(location.getLatitude()).append(",");
         locString.append(location.getLongitude()).append(",");
@@ -148,5 +150,24 @@ public class PathRecordModel extends BaseModel {
         record.append("distance:" + getDistance() + "m, ");
         record.append("duration:" + getDuration() + "s");
         return record.toString();
+    }
+
+    public float getDistance(List<AMapLocation> list) {
+        float distance = 0;
+        if (list == null || list.size() == 0) {
+            return distance;
+        }
+        for (int i = 0; i < list.size() - 1; i++) {
+            AMapLocation firstpoint = list.get(i);
+            AMapLocation secondpoint = list.get(i + 1);
+            LatLng firstLatLng = new LatLng(firstpoint.getLatitude(),
+                    firstpoint.getLongitude());
+            LatLng secondLatLng = new LatLng(secondpoint.getLatitude(),
+                    secondpoint.getLongitude());
+            double betweenDis = AMapUtils.calculateLineDistance(firstLatLng,
+                    secondLatLng);
+            distance = (float) (distance + betweenDis);
+        }
+        return distance;
     }
 }
