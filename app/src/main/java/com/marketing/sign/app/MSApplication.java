@@ -9,6 +9,7 @@ import com.elvishew.xlog.printer.Printer;
 import com.elvishew.xlog.printer.file.FilePrinter;
 import com.elvishew.xlog.printer.file.backup.NeverBackupStrategy;
 import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator;
+import com.marketing.sign.utils.CrashHandler;
 import com.marketing.sign.utils.FileUtil;
 
 /**
@@ -22,6 +23,8 @@ public class MSApplication extends Application {
     public void onCreate() {
         super.onCreate();
         init();
+        CrashHandler crashHandler= CrashHandler.getInstance();
+        crashHandler.init(this);
     }
 
     private void init() {

@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -28,6 +29,7 @@ import java.util.concurrent.Executors;
 
 public class SignService extends Service implements AMapLocationListener {
     private final static int GRAY_SERVICE_ID = -1001;
+    private MyBinder binder = new MyBinder();
     private AMapLocationClient mLocationClient;
     private AMapLocationClientOption mLocationOption;
     private PathRecordModel pathRecordModel;
@@ -76,7 +78,7 @@ public class SignService extends Service implements AMapLocationListener {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return binder;
     }
 
     @Override
@@ -122,11 +124,21 @@ public class SignService extends Service implements AMapLocationListener {
         mLocationClient.startLocation();
     }
 
+    public PathRecordModel getPathRecordModel() {
+        return pathRecordModel;
+    }
+
     class SavePathRunnable implements Runnable {
 
         @Override
         public void run() {
             PathDao.getInstance(getApplicationContext()).insertPathRecord(getApplicationContext(), pathRecordModel);
+        }
+    }
+
+    public class MyBinder extends Binder {
+        public SignService getService(){
+            return SignService.this;
         }
     }
 }

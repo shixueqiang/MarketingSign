@@ -1,9 +1,13 @@
 package com.marketing.sign.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.amap.api.location.AMapLocation;
-import com.amap.api.maps2d.AMapUtils;
-import com.amap.api.maps2d.model.LatLng;
+import com.amap.api.maps.AMapUtils;
+import com.amap.api.maps.model.LatLng;
 import com.marketing.sign.db.annotation.Column;
+import com.marketing.sign.db.annotation.Id;
 import com.marketing.sign.db.annotation.Table;
 
 import java.util.ArrayList;
@@ -15,7 +19,8 @@ import java.util.List;
  * @author shixq
  */
 @Table(name = PathRecordModel.TABLE_NAME)
-public class PathRecordModel extends BaseModel {
+public class PathRecordModel implements Parcelable {
+    public static final String ID = "_id";
     public static final String TABLE_NAME = "path";
     public static final String START_POINT = "stratpoint";
     public static final String END_POINT = "endpoint";
@@ -27,6 +32,9 @@ public class PathRecordModel extends BaseModel {
     private AMapLocation mStartPoint;
     private AMapLocation mEndPoint;
     private List<AMapLocation> mPathLinePoints = new ArrayList<AMapLocation>();
+    @Id
+    @Column(name = ID)
+    protected int id;
     @Column(name = PathRecordModel.START_POINT)
     private String mStartPointTxt;
     @Column(name = PathRecordModel.END_POINT)
@@ -41,19 +49,36 @@ public class PathRecordModel extends BaseModel {
     private String mAveragespeed;
     @Column(name = PathRecordModel.DATE)
     private String mDate;
-    private int mId = 0;
 
     public PathRecordModel() {
 
     }
 
-    public int getId() {
-        return mId;
+    protected PathRecordModel(Parcel in) {
+        mStartPoint = in.readParcelable(AMapLocation.class.getClassLoader());
+        mEndPoint = in.readParcelable(AMapLocation.class.getClassLoader());
+        mPathLinePoints = in.createTypedArrayList(AMapLocation.CREATOR);
+        id = in.readInt();
+        mStartPointTxt = in.readString();
+        mEndPointTxt = in.readString();
+        mDistance = in.readString();
+        mPathLine = in.readString();
+        mDuration = in.readString();
+        mAveragespeed = in.readString();
+        mDate = in.readString();
     }
 
-    public void setId(int id) {
-        this.mId = id;
-    }
+    public static final Creator<PathRecordModel> CREATOR = new Creator<PathRecordModel>() {
+        @Override
+        public PathRecordModel createFromParcel(Parcel in) {
+            return new PathRecordModel(in);
+        }
+
+        @Override
+        public PathRecordModel[] newArray(int size) {
+            return new PathRecordModel[size];
+        }
+    };
 
     public AMapLocation getStartpoint() {
         return mStartPoint;
@@ -169,5 +194,25 @@ public class PathRecordModel extends BaseModel {
             distance = (float) (distance + betweenDis);
         }
         return distance;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(mStartPoint, flags);
+        dest.writeParcelable(mEndPoint, flags);
+        dest.writeTypedList(mPathLinePoints);
+        dest.writeInt(id);
+        dest.writeString(mStartPointTxt);
+        dest.writeString(mEndPointTxt);
+        dest.writeString(mDistance);
+        dest.writeString(mPathLine);
+        dest.writeString(mDuration);
+        dest.writeString(mAveragespeed);
+        dest.writeString(mDate);
     }
 }
