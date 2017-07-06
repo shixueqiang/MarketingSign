@@ -20,6 +20,7 @@ import com.marketing.sign.service.SignService;
 public class WorkActivity extends BaseActivity implements View.OnClickListener {
     private Intent serviceIntent;
     private SignService signService;
+    private boolean isBind;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -31,6 +32,7 @@ public class WorkActivity extends BaseActivity implements View.OnClickListener {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             XLog.e("SignService onServiceDisconnected");
+            isBind = false;
         }
     };
 
@@ -48,10 +50,11 @@ public class WorkActivity extends BaseActivity implements View.OnClickListener {
         switch (v.getId()) {
             case R.id.btn_sign_start:
                 startService(serviceIntent);
-                bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
+                isBind = bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
                 break;
             case R.id.btn_sign_end:
-                unbindService(serviceConnection);
+                if(isBind)
+                    unbindService(serviceConnection);
                 stopService(serviceIntent);
                 Intent intent = new Intent(this,PathRecordActivity.class);
                 PathRecordModel pathRecordModel = signService.getPathRecordModel();
